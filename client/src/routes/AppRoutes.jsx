@@ -31,7 +31,7 @@ const RootLayout = lazy(() => import("@/layouts/RootLayouts"));
 const Home = lazy(() => import("@/pages/home/Home"));
 const Contact = lazy(() => import("@/pages/contact/Contact"));
 const Login = lazy(() => import("@/pages/login/Login"));
-const PatientPayments = lazy(() => import("@/pages/payments/patientPayments"));
+const PatientPayments = lazy(() => import("@/pages/payments/PatientPayments"));
 const PatientsAppointments = lazy(() =>
   import("@/pages/Appointments/PatientsAppointments")
 );
