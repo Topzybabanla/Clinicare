@@ -13,14 +13,12 @@ import DoctorFilter from "../../features/doctor/DoctorFilter";
 import Table from "../../features/doctor/Table";
 import useMetaArgs from "../../hooks/useMeta";
 
-
 export default function Doctors() {
   useMetaArgs({
-      title: "Doctor, Clinicare",
-      description: "Wellcome to your clinicare",
-      keywords: "Health, clinic, Hospital, Doctor",
-    });
-
+    title: "Doctor, Clinicare",
+    description: "Wellcome to your clinicare",
+    keywords: "Health, clinic, Hospital, Doctor",
+  });
 
   const { accessToken } = useAuth();
   const [searchParams] = useSearchParams();
@@ -40,10 +38,8 @@ export default function Doctors() {
     ],
     queryFn: () => getAllDoctors(searchParams, accessToken),
   });
-  
 
   const doctors = data?.data?.data?.doctors || [];
- 
 
   const {
     handlePageChange,
@@ -79,24 +75,24 @@ export default function Doctors() {
             <ErrorAlert error={error?.response?.data?.message} />
           ) : (
             <>
-              {doctors?.length > 0 ? (
-                <>
-                  <Suspense fallback={<SkeletonTable />}>
-                    <Table doctors={doctors} />
-                  </Suspense>
-                  <Paginate
-                    totalPages={totalPages}
-                    hasMore={hasMore}
-                    handlePageChange={handlePageChange}
-                    currentPage={currentPage}
-                    // limit={pageLimit}
-                  />
-                </>
-              ) : (
+              {/* {doctors?.length > 0 ? ( */}
+              <>
+                <Suspense fallback={<SkeletonTable />}>
+                  <Table doctors={doctors} />
+                </Suspense>
+                <Paginate
+                  totalPages={totalPages}
+                  hasMore={hasMore}
+                  handlePageChange={handlePageChange}
+                  currentPage={currentPage}
+                  // limit={pageLimit}
+                />
+              </>
+              {/* ) : (
                 <p className="mt-6  font-semibold text-center">
                   No doctors found
                 </p>
-              )}
+              )} */}
             </>
           )}
         </>

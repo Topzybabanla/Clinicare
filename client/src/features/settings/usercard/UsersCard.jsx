@@ -2,13 +2,9 @@ import React from "react";
 import { formatDate, usersRoleColors } from "../../../utils/constants";
 import Edit from "../Edit";
 import DeleteUser from "../DeleteUser";
-import { useState } from "react";
 import { useAuth } from "../../../store";
 
 export default function UserCards({ item }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [userId, setUserId] = useState(null);
   const { user } = useAuth();
 
   return (

@@ -37,9 +37,8 @@ export default function Rooms() {
     hasMore: data?.data?.data?.meta?.hasMore || false,
     currentPage: data?.data?.data?.meta?.currentPage || 1,
   });
-  
+
   const rooms = data?.data?.data?.rooms || [];
-  
 
   return (
     <>
@@ -65,23 +64,23 @@ export default function Rooms() {
               <ErrorAlert error={error?.response?.data?.message} />
             ) : (
               <>
-                {rooms?.length > 0 ? (
-                  <>
-                    <Suspense fallback={<SkeletonTable />}>
-                      <Table rooms={rooms} />
-                    </Suspense>
-                    <Paginate
-                      totalPages={totalPages}
-                      hasMore={hasMore}
-                      handlePageChange={handlePageChange}
-                      currentPage={currentPage}
-                    />
-                  </>
-                ) : (
+                {/* {rooms?.length > 0 ? ( */}
+                <>
+                  <Suspense fallback={<SkeletonTable />}>
+                    <Table rooms={rooms} />
+                  </Suspense>
+                  <Paginate
+                    totalPages={totalPages}
+                    hasMore={hasMore}
+                    handlePageChange={handlePageChange}
+                    currentPage={currentPage}
+                  />
+                </>
+                {/* ) : (
                   <p className="mt-6 font-semibold text-center">
                     No Rooms Found
                   </p>
-                )}
+                )} */}
               </>
             )}
           </>

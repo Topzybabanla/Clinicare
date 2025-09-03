@@ -16,8 +16,7 @@ import doctorRoutes from "./src/routes/doctorRoutes.js";
 import appointmentRoutes from "./src/routes/appointmentRoutes.js";
 import paymentRoutes from "./src/routes/paymentRoutes.js";
 import inpatientRoutes from "./src/routes/inpatientRoutes.js";
-import dashboardRoutes from "./src/routes/dashboardRoutes.js"
-
+import dashboardRoutes from "./src/routes/dashboardRoutes.js";
 
 // initialize express app
 const app = express();
@@ -31,7 +30,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:4800"], //allow request from client address
+    origin: [
+      "http://localhost:4800",
+      "https://clinicare-servertech.vercel.app",
+    ], //allow request from client address
     credentials: true, //allow cookie to be sent
     methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"], //permitted http methods
     optionsSuccessStatus: 200, //default status
@@ -71,7 +73,7 @@ app.use("/api/v1/doctors", doctorRoutes);
 app.use("/api/v1/appointments", appointmentRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/inpatients", inpatientRoutes);
-app.use("/api/v1/dashboard", dashboardRoutes)
+app.use("/api/v1/dashboard", dashboardRoutes);
 
 // handle route errors
 app.use(catchNotFound);

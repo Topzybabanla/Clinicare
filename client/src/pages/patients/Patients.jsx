@@ -24,8 +24,6 @@ export default function Patients() {
     queryFn: () => getAllPatients(searchParams, accessToken),
   });
 
-  
-
   const { handlePageChange, totalPages, hasMore, currentPage } = usePaginate({
     totalPages: data?.data?.data?.meta?.totalPages || 1,
     hasMore: data?.data?.data?.meta?.hasMore || false,
@@ -59,24 +57,24 @@ export default function Patients() {
             <ErrorAlert error={error?.response?.data?.message} />
           ) : (
             <>
-              {patients?.length > 0 ? (
-                <>
-                  <Suspense fallback={<SkeletonTable />}>
-                    <Table patients={patients} />
-                  </Suspense>
-                  <Paginate
-                    totalPages={totalPages}
-                    hasMore={hasMore}
-                    handlePageChange={handlePageChange}
-                    currentPage={currentPage}
-                  />
-                </>
-              ) : (
+              {/* {patients?.length > 0 ? ( */}
+              <>
+                <Suspense fallback={<SkeletonTable />}>
+                  <Table patients={patients} />
+                </Suspense>
+                <Paginate
+                  totalPages={totalPages}
+                  hasMore={hasMore}
+                  handlePageChange={handlePageChange}
+                  currentPage={currentPage}
+                />
+              </>
+              {/* ) : (
                 <p className="mt-6 font-semibold text-center">
                   {" "}
                   No patients found{" "}
                 </p>
-              )}
+              )} */}
             </>
           )}
         </>

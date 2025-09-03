@@ -14,11 +14,10 @@ import useMetaArgs from "../../hooks/useMeta";
 
 export default function Appointments() {
   useMetaArgs({
-      title: "Appointments, Clinicare",
-      description: "Book your appointment",
-      keywords: "Health, clinic, Hospital",
-    });
-
+    title: "Appointments, Clinicare",
+    description: "Book your appointment",
+    keywords: "Health, clinic, Hospital",
+  });
 
   const { accessToken } = useAuth();
   const [searchParams] = useSearchParams();
@@ -44,7 +43,7 @@ export default function Appointments() {
   });
 
   const appointment = data?.data?.data?.appointments || [];
- 
+
   const {
     handlePageChange,
     totalPages,
@@ -78,23 +77,23 @@ export default function Appointments() {
             <ErrorAlert error={error?.response?.data?.message} />
           ) : (
             <>
-              {appointment?.length > 0 ? (
-                <>
-                  <Suspense fallback={<SkeletonTable />}>
-                    <Table appointment={appointment} />
-                  </Suspense>
-                  <Paginate
-                    totalPages={totalPages}
-                    hasMore={hasMore}
-                    handlePageChange={handlePageChange}
-                    currentPage={currentPage}
-                  />
-                </>
-              ) : (
+              {/* {appointment?.length > 0 ? ( */}
+              <>
+                <Suspense fallback={<SkeletonTable />}>
+                  <Table appointment={appointment} />
+                </Suspense>
+                <Paginate
+                  totalPages={totalPages}
+                  hasMore={hasMore}
+                  handlePageChange={handlePageChange}
+                  currentPage={currentPage}
+                />
+              </>
+              {/* ) : (
                 <p className="mt-6  font-semibold text-center">
                   No appointments found
                 </p>
-              )}
+              )} */}
             </>
           )}
         </>
