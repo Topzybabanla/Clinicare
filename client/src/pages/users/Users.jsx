@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router";
 import usePaginate from "../../hooks/usePaginate";
 import AddNewUser from "../../features/settings/usercard/AddNewUser";
-import Filter from "../../features/settings/usercard/filter";
+import Filter from "../../features/settings/usercard/Filter";
 import Search from "../../components/Search";
 import Paginate from "../../components/Paginate";
 // import UsersCard from "../../features/settings/usercard/UsersCard";
