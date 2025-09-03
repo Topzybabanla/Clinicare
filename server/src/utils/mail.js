@@ -34,7 +34,7 @@ verifyEmailConnection().catch(console.error);
 
 export const sendEmail = async ({ to, subject, html }) => {
   const mailOptions = {
-    from: "Clinicare <Ozordanielmichael@gmail.com>",
+    from: "Clinicare <Alexwangthomas@gmail.com>",
     to,
     subject,
     html,

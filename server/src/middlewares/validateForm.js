@@ -4,7 +4,7 @@ export const validateFormData = (schema) => (req, res, next) => {
   try {
     // receive and transfrom data gotten from the client through the req.body
     const parsedData = schema.parse(req.body);
-    console.log(parsedData);
+    
     req.body = parsedData; //transformed data with no error
     next(); //call the next action that supposed to happen - invoke the api function
   } catch (error) {

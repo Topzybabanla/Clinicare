@@ -5,6 +5,11 @@ import { useForm } from "react-hook-form";
 import { validatePatientSchema } from "../../utils/dataSchema";
 import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "../../store";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { registerPatient } from "@/api/patients";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
+import ErrorAlert from "../../components/ErrorAlert";
 
 export default function PatientOnboard() {
   useMetaArgs({
@@ -12,8 +17,13 @@ export default function PatientOnboard() {
     description: "Set up your Clinicare account",
     keywords: "Clinicare, account set-up, data, information, account",
   });
-  const [currentStep, setCurrentStep] = useState(1);
+  const { user, accessToken } = useAuth(); //we want to get the user from the context
+  const [currentStep, setCurrentStep] = useState(
+    user?.isCompletedOnboard ? 3 : 1
+  );
+
   const [field, setField] = useState(false);
+  const [error, setError] = useState(null);
 
   const {
     register,
@@ -23,10 +33,10 @@ export default function PatientOnboard() {
     formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(validatePatientSchema) });
 
-  const { user } = useAuth();
-
   const gender = ["male", "female", "other"];
 
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const bloodGroupOptions = Object.entries(bloodGroup).map(([key, value]) => ({
     name: key,
     id: value,
@@ -67,6 +77,23 @@ export default function PatientOnboard() {
     setField(hasEmptyFields || hasErrors);
   }, [formValue, errors, currentStep, requiredFields1, requiredFields2]);
 
+  const mutation = useMutation({
+    mutationFn: registerPatient,
+    onSuccess: (response) => {
+      if (response.status === 201) {
+        toast.success(response?.data?.message);
+        //clear old user data
+        queryClient.invalidateQueries({ queryKey: ["auth_user"] });
+      }
+    },
+    onError: (error) => {
+      import.meta.env.DEV && console.log(error);
+      setError(
+        error?.response?.data?.message || "Error registering your details"
+      );
+    },
+  });
+
   const handleStep = () => {
     if (currentStep === 1) {
       setCurrentStep(currentStep + 1);
@@ -75,8 +102,8 @@ export default function PatientOnboard() {
     }
   };
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (formData) => {
+    mutation.mutate({ formData, accessToken });
   };
 
   return (
@@ -89,9 +116,12 @@ export default function PatientOnboard() {
             onSubmit={handleSubmit(onSubmit)}
           >
             <p className="text-center text-[14px] md:text-[15px] pb-4 text-zinc-600 ">
-              Hello <span className="font-bold">{user?.fullname}</span>, Please
-              complete your patient profile
+              Hello <span className="font-bold">{user?.fullname}</span>,{" "}
+              {user?.isCompletedOnboard
+                ? "Onboarding completer"
+                : "Please complete your patient profile"}
             </p>
+            {error && <ErrorAlert error={error} />}
             <ul className="steps">
               <li
                 className={`step w-full ${
@@ -325,6 +355,28 @@ export default function PatientOnboard() {
                   </button>
                 )}
               </div>
+
+               {currentStep === 3 && (
+                <div className=" p-4 text-center">
+                  <img
+                    src="/Success.svg"
+                    alt="success"
+                    className="w-full h-[200px]"
+                  />
+                  <h1 className="text-2xl font-bold">Congratulations!</h1>
+                  <p className="text-gray-600">
+                    "Your account has been verified successfully."
+                  </p>
+                  <button
+                    className="btn my-4 bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
+                    size="lg"
+                    onClick={() => navigate("/dashboard", { replace: true })}
+                  >
+                    Continue to dashboard
+                  </button>
+                </div>
+              )}
+
               {currentStep === 2 && (
                 <div className="flex gap-4 justify-end">
                   <button
@@ -335,10 +387,10 @@ export default function PatientOnboard() {
                   </button>
                   <button
                     className="bg-blue-500 text-white font-bold p-2 rounded-md cursor-pointer w-[140px]"
-                    disabled={mutation.isPending || field}
+                    disabled={isSubmitting || mutation.isPending || field}
                     type="submit"
                   >
-                    {mutation.isPending ? "Saving..." : "Save"}
+                    {isSubmitting || mutation.isPending ? "Saving..." : "Save"}
                   </button>
                 </div>
               )}

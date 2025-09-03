@@ -1,7 +1,7 @@
 import { RiUser3Line, RiUser4Fill } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { validateSignInSchema } from "../../utils/dataSchema";
 import ErrorAlert from "../../components/ErrorAlert";
 import { useState } from "react";
@@ -21,17 +21,21 @@ export default function Login() {
     resolver: zodResolver(validateSignInSchema),
   });
 
-  const { setAccessToken } = useAuth();
+  const { setAccessToken, user } = useAuth();
+  const navigate = useNavigate();
 
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (response) => {
-      // console.log(response);
+      
       toast.success(response?.data?.message || "Login Successfull");
       setAccessToken(response?.data?.data?.accessToken);
+      if (!user?.isVerified) {
+        navigate("/verify-account");
+      }
     },
     onError: (error) => {
-      console.log(error);
+     import.meta.env.DEV && console.log(error);
       setError(error?.response?.data?.message || "Login failed");
     },
   });

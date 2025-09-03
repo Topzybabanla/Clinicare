@@ -25,7 +25,8 @@ const userSchema = new Schema(
     },
     phone: {
       type: String,
-      maxlength: [14, "Phone number must not exceed 11 digits"],
+      // default: "N/A"
+      // maxlength: [14, "Phone number must not exceed 11 digits"],
     },
     avatar: {
       type: String,

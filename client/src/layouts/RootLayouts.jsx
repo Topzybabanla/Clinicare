@@ -9,7 +9,7 @@ export default function RootLayouts() {
         <Logo />
         <div className="lg:flex gap-8 hidden ">
           <NavLink>Features</NavLink>
-          <NavLink>How it Works</NavLink>
+          <NavLink to={"#How it works"}>How it Works</NavLink>
           <NavLink
             to="/contact"
             className={({ isActive }) => (isActive ? "text-blue-500 " : " ")}

@@ -80,7 +80,7 @@ export default function VerifyAccount() {
       setSuccess(true);
     },
     onError: (error) => {
-      console.log(error);
+      import.meta.env.DEV && console.log(error);
       setError(error?.response?.data?.message || "Account verification failed");
     },
   });
@@ -91,7 +91,7 @@ export default function VerifyAccount() {
       toast.success(response?.data?.message || "Verification token sent");
     },
     onError: (error) => {
-      console.log(error);
+      import.meta.env.DEV && console.log(error);
       setError(error?.response?.data?.message || "Verification code failed");
     },
   });
@@ -99,6 +99,13 @@ export default function VerifyAccount() {
   const onSubmit = async (e) => {
     e.preventDefault();
     mutation.mutate({ verificationToken, accessToken });
+  };
+
+  const redirect = () => {
+    if (user?.role === "patient") {
+      navigate("/patients-onboard");
+    }
+    navigate("/dashboard");
   };
   const handleResendCode = async (e) => {
     e.preventDefault();
@@ -122,16 +129,14 @@ export default function VerifyAccount() {
             <img src="/Success.svg" alt="success" className="w-full h-full" />
             <h1 className="text-2xl font-bold">Congratulations!</h1>
             <p className="text-gray-600">
-              {user?.isVerified
-                ? "Your account has already been verified."
-                : "Your account has been verified successfully."}
+              Your account has been verified successfully
             </p>
             <button
               className="btn my-4 bg-blue-500 hover:bg-blue-600  text-white cursor-pointer"
               size="lg"
-              onClick={() => navigate("/", { replace: true })}
+              onClick={redirect}
             >
-              Go back to home
+              Continue
             </button>
           </div>
         </>

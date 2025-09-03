@@ -8,11 +8,10 @@ import { resetPassword } from "../../api/auth";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router";
 
-
 export default function ResetPassword() {
   const [error, setError] = useState(null);
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -23,7 +22,6 @@ export default function ResetPassword() {
   // look for values on our url bar
   const email = searchParams.get("email");
   const token = searchParams.get("token");
-  console.log({ email, token });
 
   const mutation = useMutation({
     mutationFn: resetPassword,
@@ -32,7 +30,7 @@ export default function ResetPassword() {
       navigate("/account/signin");
     },
     onError: (error) => {
-      console.log(error);
+      import.meta.env.DEV && console.log(error);
       setError(error?.response?.data?.message);
     },
   });

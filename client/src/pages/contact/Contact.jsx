@@ -1,6 +1,13 @@
 import React from 'react'
+import useMetaArgs from '../../hooks/useMeta';
 
 export default function Contact() {
+
+  useMetaArgs({
+      title: "Contact, Clinicare",
+      description: "Wellcome to your clinicare, contact us",
+      keywords: "Health, clinic, Hospital",
+    });
   return (
     <>
     

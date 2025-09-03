@@ -19,11 +19,11 @@ export default function ForgotPassword() {
   const mutation = useMutation({
     mutationFn: forgotPassword,
     onSuccess: (response) => {
-      console.log(response);
+      
       toast.success(response?.data?.message || "Password reset link sent");
     },
     onError: (error) => {
-      console.log(error);
+      import.meta.env.DEV && console.log(error);
       setError(
         error?.response?.data?.message || "Failed to send password link"
       );
@@ -31,7 +31,7 @@ export default function ForgotPassword() {
   });
 
   const onsubmit = async (data) => {
-    console.log(data);
+    
     mutation.mutate(data);
   };
 

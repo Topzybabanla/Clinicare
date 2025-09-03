@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { validateSignUpSchema } from "../../utils/dataSchema";
 import ErrorAlert from "../../components/ErrorAlert";
 import { useForm } from "react-hook-form";
@@ -25,21 +25,25 @@ export default function SignUp() {
     resolver: zodResolver(validateSignUpSchema),
   });
 
-  const { setAccessToken } = useAuth();
+  const { setAccessToken, user } = useAuth();
   // const queryClient = useQueryClient(); //initializing our queryclient from tanstack
 
+  const navigate = useNavigate();
   // mutations are for create, update or delete actions
   const mutation = useMutation({
     mutationFn: registerUser,
     onSuccess: (response) => {
       // what you want to do if api call is success
-      // console.log(response);
+
       toast.success(response?.data?.message || "Registration successful");
       setAccessToken(response?.data?.data?.accessToken);
       // save accessToken
+      if (!user?.isVerified) {
+        navigate("/verify-account");
+      }
     },
     onError: (error) => {
-      console.log(error);
+      import.meta.env.DEV && console.log(error);
       setError(error?.response?.data?.message || "Registration failed");
       // toast.error(error?.response?.data?.message || "Registration failed");
     },
@@ -127,7 +131,10 @@ export default function SignUp() {
         </form>
         <p className="text-center text-sm text-gray-600">
           Already have an account?{" "}
-          <Link to="/account/signin" className={"hover:underline text-blue-700"}>
+          <Link
+            to="/account/signin"
+            className={"hover:underline text-blue-700"}
+          >
             Login
           </Link>
         </p>

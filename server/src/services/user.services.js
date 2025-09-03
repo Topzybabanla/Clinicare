@@ -2,14 +2,18 @@ import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-// import { welcomeUserTemplate } from "../utils/emailTemplates.js";
-// import { sendEmail } from "./email.services.js";
+import Patient from "../models/patient.js";
+import Doctor from "../models/doctor.js";
+import Inpatient from "../models/inPatients.js";
+import {
+  deleteFromCloudinary,
+  uploadToCloudinary,
+} from "../utils/cloudinary.js";
+
 import responseHandler from "../utils/responseHandler.js";
-import { welcomeUserTemplate } from "../utils/emailTemplates.js";
-import { sendEmail } from "../utils/mail.js";
-import { decode } from "punycode";
+
 import mailService from "./email.services.js";
-import { error } from "console";
+
 const { errorResponse, notFoundResponse } = responseHandler;
 
 const userService = {
@@ -233,13 +237,233 @@ const userService = {
     return user;
   },
   logout: async (req, res, next) => {
-    req.cookie("userRefreshToken", "", {
+    res.cookie("userRefreshToken", "", {
       maxAge: 0,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/api/v1/auth/refresh-token",
     });
+  },
+
+  uploadAvatar: async (userId, avatar, next) => {
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(notFoundResponse("No user found with that email"));
+    }
+    if (!avatar) {
+      return next(errorResponse("No file uploaded", 400));
+    }
+    //check if user has avatar already
+    const currentAvatar = user.avatar;
+    const currentAvatarId = user.avatarId;
+    if (currentAvatar) {
+      //if avatar exists, delete and replace with new avatar
+      await deleteFromCloudinary(currentAvatarId);
+    }
+    const { url, public_id } = await uploadToCloudinary(avatar, {
+      folder: "Clinicare/avatars",
+      width: 200,
+      height: 200,
+      crop: "fit",
+      format: "webp",
+    });
+    user.avatar = url || user.avatar;
+    user.avatarId = public_id || user.avatarId;
+    await user.save();
+    return user;
+  },
+
+  updateUserPassword: async (userId, userData, next) => {
+    const user = await User.findById(userId).select("+password");
+    if (!user) {
+      return next(notFoundResponse("No user found with that email"));
+    }
+    const { password, newPassword, confirmPassword } = userData;
+    const [checkPassword, isPasswordSame] = await Promise.all([
+      bcrypt.compare(password, user.password),
+      bcrypt.compare(newPassword, user.password),
+    ]);
+    if (!checkPassword) {
+      return next(errorResponse("Incorrect current password", 400));
+    }
+    if (newPassword !== confirmPassword) {
+      return next(
+        errorResponse("New password and confirm password does not match", 400)
+      );
+    }
+    if (isPasswordSame) {
+      return next(
+        errorResponse("New password must be different from old password", 400)
+      );
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    const updatedUser = await user.save();
+    return updatedUser;
+  },
+
+  updateUser: async (userId, userData, next) => {
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(notFoundResponse("No user found with that email"));
+    }
+    if (userData.phone) {
+      const phoneExists = await User.findOne({ phone: userData.phone });
+      if (phoneExists) {
+        return next(errorResponse("User with phone already exists", 400));
+      }
+    }
+    for (const [key, value] of Object.entries(userData)) {
+      if (value) {
+        user[key] = value;
+      }
+    }
+    const updatedUser = await user.save();
+    return updatedUser;
+  },
+
+  deleteAccount: async (userId, next) => {
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(notFoundResponse("Account not found"));
+    }
+    if (user.avatarId) {
+      await deleteFromCloudinary(user.avatarId);
+    }
+    if (user.role === "patient") {
+      const patient = await Patient.findOne({ userId });
+      const inpatient = await Inpatient.findOne({ patientId: patient });
+      if (inpatient) {
+        await inpatient.deleteOne();
+      }
+      await Patient.findOneAndDelete({ userId });
+    }
+    if (user.role === "doctor") {
+      await Doctor.findOneAndDelete({ userId });
+    }
+    await user.deleteOne();
+    return true;
+  },
+
+  getAllUsers: async (page = 1, limit = 3, query = "", role = "", next) => {
+    const sanitizeQuery =
+      query || role
+        ? (query || role).toLowerCase().replace(/[^\w\s]/gi, "")
+        : "";
+    const [users, total] = sanitizeQuery
+      ? await Promise.all([
+          User.find({
+            $or: [
+              { fullname: { $regex: sanitizeQuery, $options: "i" } },
+              { role: { $regex: sanitizeQuery, $options: "i" } },
+            ],
+          })
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit),
+          User.countDocuments({
+            $or: [
+              { fullname: { $regex: sanitizeQuery, $options: "i" } },
+              { role: { $regex: sanitizeQuery, $options: "i" } },
+            ],
+          }),
+        ])
+      : await Promise.all([
+          User.find()
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit),
+          User.countDocuments(),
+        ]);
+    if (!users) {
+      return next(notFoundResponse("No users found"));
+    }
+    return {
+      meta: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        total,
+        hasMore: (page - 1) * limit + users.length < total,
+        limit,
+      },
+      users,
+    };
+  },
+
+  deleteAccountAdmins: async (userId, next) => {
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(notFoundResponse("Account not found"));
+    }
+    if (user.avatarId) {
+      await deleteFromCloudinary(user.avatarId);
+    }
+    if (user.role === "patient") {
+      const patient = await Patient.findOne({ userId });
+      const inpatient = await Inpatient.findOne({ patientId: patient });
+      if (inpatient) {
+        await inpatient.deleteOne();
+      }
+      await Patient.findOneAndDelete({ userId });
+    }
+    if (user.role === "doctor") {
+      await Doctor.findOneAndDelete({ userId });
+    }
+    await user.deleteOne();
+    return true;
+  },
+
+  updateUserRole: async (userId, userData, next) => {
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(notFoundResponse("No user found"));
+    }
+    if (user.role === "patient") {
+      return next(errorResponse("Patient role cannot be updated"));
+    }
+    if (user.role === "admin" && userData.role !== "admin") {
+      return next(errorResponse("Admin cannot update or downgrade an admin"));
+    }
+    for (const [key, value] of Object.entries(userData)) {
+      if (value) {
+        user[key] = value;
+      }
+    }
+    const updatedUser = await user.save();
+    return updatedUser;
+  },
+
+  createUserAdmins: async (userData, next) => {
+    const emailExists = await User.findOne({ email: userData.email });
+    if (emailExists) {
+      return next(errorResponse("Email already exists", 400));
+    }
+    const verificationCode = crypto.randomInt(100000, 999999).toString();
+    const verificationCodeExpiry = new Date(Date.now() + 3600000);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPass = await bcrypt.hash(userData.password, salt);
+    const user = await User.create({
+      ...userData,
+      password: hashedPass,
+      verificationToken: verificationCode,
+      verificationTokenExpiry: verificationCodeExpiry,
+    });
+    process.nextTick(() => {
+      mailService.sendWelcomeMail(user, userData.password).catch(console.error);
+    });
+    if (user.role === "doctor") {
+      await Doctor.create({
+        userId: user._id,
+        availability: userData.availability,
+        specialization: userData.specialization,
+      });
+    }
+    if (!user) {
+      return next(errorResponse("User registration failed"));
+    }
+    return user;
   },
 };
 

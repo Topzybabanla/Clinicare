@@ -29,7 +29,6 @@ export function PrivateRoutes({ children, accessToken, user }) {
         replace: true,
       });
     }
-    // handle redirect to verify account
     if (user && !user.isVerified && location.pathname !== "/verify-account") {
       navigate("/verify-account");
     }
@@ -47,5 +46,25 @@ export function PrivateRoutes({ children, accessToken, user }) {
     }
   }, [accessToken, from, location, navigate, user]);
 
+  return children;
+}
+
+export function VerifiedRoutes({ children, accessToken, user }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = location.state?.from || "/account/signin";
+
+  useEffect(() => {
+    if (!accessToken) {
+      navigate(from, {
+        state: { from: location },
+        replace: true,
+      });
+    }
+    // handle redirect to verify account
+    if (user && !user.isVerified && location.pathname !== "/verify-account") {
+      navigate("/verify-account");
+    }
+  }, [accessToken, from, location, navigate, user]);
   return children;
 }

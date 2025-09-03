@@ -10,7 +10,7 @@ import { useNavigate } from "react-router";
 
 export default function Logout() {
   const [isOpen, setIsOpen] = useState(false);
-  const {accessToken, setAccessToken} = useAuth();
+  const { accessToken, setAccessToken } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -19,14 +19,13 @@ export default function Logout() {
     mutationFn: logout,
     onSuccess: (response) => {
       toast.success(response?.data?.message);
-      queryClient.invalidateQueries({ querykey: ["auth_user"] });
+      queryClient.clear()
       setIsOpen(false);
       setAccessToken(null);
       navigate("/account/signin");
     },
     onError: (error) => {
       console.error(error);
-
       toast.error(error?.response?.data?.message, { id: "Logout" });
     },
   });
@@ -71,7 +70,7 @@ export default function Logout() {
               disabled={mutation.isPending}
               onClick={onLogout}
             >
-              Yes, Logout
+              {mutation.isPending ? "Logging out" : "Yes, Logout"}
             </button>
           </div>
         </div>
