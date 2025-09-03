@@ -1,4 +1,4 @@
-import ErrorAlert from "@/components/errorAlert";
+import ErrorAlert from "@/components/ErrorAlert";
 import Modal from "@/components/Modal";
 import { validateSignUpSchema } from "@/utils/dataSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
