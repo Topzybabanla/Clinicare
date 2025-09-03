@@ -1,7 +1,7 @@
 // import { useAuth } from "@/store";
 import { RiCloseLine, RiLogoutCircleRLine, RiMenuLine } from "@remixicon/react";
 import { useState } from "react";
-import Sidebar from "./Sidebar";
+import Sidebar from "./SideBar";
 import { NavLink } from "react-router";
 import Logout from "./Logout";
 import { navLinks } from "../utils/constants";
